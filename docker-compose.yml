@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  ampache:
+    image: ampache/ampache:latest
+    container_name: ampache
+    restart: unless-stopped
+    labels:
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    volumes:
+      - ./data/config:/var/www/config
+      - ./data/log:/var/log/ampache
+      - ./data/media:/media
+      - ./data/mysql:/var/lib/mysql
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile

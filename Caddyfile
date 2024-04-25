@@ -1,0 +1,3 @@
+ampache.buluu.es
+
+reverse_proxy /ampache ampache:80

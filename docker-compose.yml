@@ -1,24 +1,29 @@
-version: '3'
+version: '3.9'
+
+networks:
+  web:
+    external: true
 
 services:
   ampache:
     image: ampache/ampache:latest
     container_name: ampache
     restart: unless-stopped
+    env_file: .env
+    expose:
+      - '80'
+    networks:
+      - web
     labels:
+      # Caddy labels
+      caddy: "${AMPACHE_HOST}"
       caddy.reverse_proxy: "{{upstreams 80}}"
+      # Traefik labels
+      traefik.enable: 'true'
+      traefik.frontend.rule: "Host:${AMPACHE_HOST}"
+      traefik.port: '80'
     volumes:
-      - ./data/config:/var/www/config
-      - ./data/log:/var/log/ampache
-      - ./data/media:/media
-      - ./data/mysql:/var/lib/mysql
-
-  caddy:
-    image: caddy:latest
-    container_name: caddy
-    restart: unless-stopped
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./docker-volumes/ampache/config:/var/www/config
+      - ./docker-volumes/ampache/log:/var/log/ampache
+      - ./docker-volumes/ampache/media:/media
+      - ./docker-volumes/ampache/mysql:/var/lib/mysql

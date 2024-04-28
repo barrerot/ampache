@@ -3,6 +3,8 @@ version: '3.9'
 networks:
   web:
     external: true
+  ampache-net:
+    driver: bridge
 
 services:
   ampache:
@@ -14,11 +16,10 @@ services:
       - '80'
     networks:
       - web
+      - ampache-net
     labels:
-      # Caddy labels
       caddy: "${AMPACHE_HOST}"
       caddy.reverse_proxy: "{{upstreams 80}}"
-      # Traefik labels
       traefik.enable: 'true'
       traefik.frontend.rule: "Host:${AMPACHE_HOST}"
       traefik.port: '80'
@@ -26,4 +27,18 @@ services:
       - ./docker-volumes/ampache/config:/var/www/config
       - ./docker-volumes/ampache/log:/var/log/ampache
       - ./docker-volumes/ampache/media:/media
+      - ./docker-volumes/ampache/mysql:/var/lib/mysql
+
+  mysql:
+    image: mysql:5.7
+    restart: unless-stopped
+    container_name: ampache-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ampache
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+      - ampache-net
+    volumes:
       - ./docker-volumes/ampache/mysql:/var/lib/mysql

@@ -13,32 +13,29 @@ services:
     restart: unless-stopped
     env_file: .env
     expose:
-      - '80'
+      - 80
     networks:
       - web
       - ampache-net
-    labels:
-      caddy: "${AMPACHE_HOST}"
-      caddy.reverse_proxy: "{{upstreams 80}}"
-      traefik.enable: 'true'
-      traefik.frontend.rule: "Host:${AMPACHE_HOST}"
-      traefik.port: '80'
     volumes:
       - ./docker-volumes/ampache/config:/var/www/config
       - ./docker-volumes/ampache/log:/var/log/ampache
       - ./docker-volumes/ampache/media:/media
-      - ./docker-volumes/ampache/mysql:/var/lib/mysql
+    labels:
+      caddy: "${AMPACHE_HOST}"
+      caddy.reverse_proxy: "{{upstreams 80}}"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:${AMPACHE_HOST}"
+      traefik.port: "80"
 
   mysql:
     image: mysql:5.7
-    restart: unless-stopped
     container_name: ampache-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    restart: unless-stopped
+    env_file: .env
     networks:
       - ampache-net
     volumes:
       - ./docker-volumes/ampache/mysql:/var/lib/mysql
+    expose:
+      - 3306
